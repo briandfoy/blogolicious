@@ -6,6 +6,8 @@ no warnings qw( experimental::signatures );
 
 use subs qw();
 
+use Carp qw(carp);
+
 our $VERSION = '0.001_01';
 
 =encoding utf8
@@ -81,31 +83,41 @@ Fetch the URL and return a L<Blogolicious::Entry> object.
 
 sub fetch ( $self, $url ) {
 	my $tx =  $self->ua->get( $url );
+	unless( $tx->success ) {
+		my $err = $tx->error;
+		carp "$err->{code} response: $err->{message}" if $err->{code};
+		carp "Connection error: $err->{message}";
+		return;
+		}
+
 	my $entry = $self->_process_response( $tx );
 	$entry->set_original_url( $url );
 	$entry;
 	}
 
 sub _process_response ( $self, $tx ) {
+	state $rc = require Blogolicious::Entry;
 	my $dom = $tx->res->dom;
 
 	my $generator = $self->_parse_generator( $dom );
 	my $server    = $self->_parse_server( $tx->res );
 
 	my $entry = Blogolicious::Entry->new( {
+		original_url => $tx->req->url,
 		type    => $generator,
 		server  => $server,
-		headers => $tx->res->headers,
-		original_url => $tx->req->url,
+#		headers => $tx->res->headers,
+		feed    => $self->_find_feed( $dom ),
+		tx      => $tx,
 		} );
 	}
 
 sub _parse_generator ( $self, $dom ) {
-	state $rc = require Blogolicious::Entry;
 	# <meta name="generator" content="WordPress 4.0" />
 	# <meta name=generator content="bpo-sidecar, by the blogs.perl.org team">
 	# <meta content='blogger' name='generator'/>
 	# <meta name="generator" content="WordPress.com" />
+	# <meta name="generator" content="http://www.typepad.com/" />
 	my $generator = eval {
 		$dom
 		->find( 'meta[name="generator"]' )
