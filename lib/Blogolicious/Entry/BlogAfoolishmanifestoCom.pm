@@ -29,8 +29,8 @@ Blogolicious::Entry::BlogAfoolishmanifestoCom - Handle fREW Schmidt's blog entri
 =cut
 
 sub interesting_content_selector ( $self ) {
-	 'div#main'
-	#'div.col-md-12'
+	# 'div#main'
+	'div.col-md-12'
 	}
 
 =back
