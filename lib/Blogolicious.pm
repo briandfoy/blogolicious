@@ -59,21 +59,37 @@ Setup everything
 =cut
 
 sub init ( $self ) {
-	$self->_setup_ua;
+	$self->_setup_mojo_ua;
+	$self->_setup_curl_ua;
 	}
 
-sub _setup_ua ( $self ) {
-	require Mojo::UserAgent;
-	$self->{ua} = Mojo::UserAgent->new;
-	}
+=item mojo_ua
 
-=item ua
-
-Returns the user agent object
+Returns the user agent for Mojo::UserAgent
 
 =cut
 
-sub ua ( $self ) { $self->{ua} }
+sub _setup_mojo_ua ( $self ) {
+	state $rc = require Mojo::UserAgent;
+	$self->{mojo_ua} = Mojo::UserAgent->new;
+	}
+sub mojo_ua ( $self ) { $self->{mojo_ua} }
+
+=item curl_ua
+
+Returns the user agent for WWW::Curl::UserAgent
+
+=cut
+
+sub _setup_curl_ua ( $self ) {
+	state $rc = require WWW::Curl::UserAgent;
+	require HTTP::Request;
+	$self->{curl_ua} = WWW::Curl::UserAgent->new(
+		timeout         => 10000,
+		connect_timeout =>  1000,
+		);
+	}
+sub curl_ua ( $self ) { $self->{curl_ua} }
 
 =item fetch( URL )
 
@@ -82,25 +98,35 @@ Fetch the URL and return a L<Blogolicious::Entry> object.
 =cut
 
 sub fetch ( $self, $url ) {
-	my $tx =  $self->ua->get( $url );
+	$self->_fetch_with_mojo( $url ) ||
+	$self->_fetch_with_curl( $url ) ||
+
+	do {
+		carp "Could not fetch $url";
+		return;
+		};
+	}
+
+sub _fetch_with_mojo ( $self, $url ) {
+	my $tx =  $self->mojo_ua->get( $url );
 	unless( $tx->success ) {
 		my $err = $tx->error;
-		carp "$err->{code} response: $err->{message}" if $err->{code};
-		carp "Connection error: $err->{message}";
+#		carp "$err->{code} response: $err->{message}" if $err->{code};
+#		carp "Connection error: $err->{message}";
 		return;
 		}
 
-	my $entry = $self->_process_response( $tx );
+	my $entry = $self->_process_mojo_response( $tx );
 	$entry->set_original_url( $url );
 	$entry;
 	}
 
-sub _process_response ( $self, $tx ) {
+sub _process_mojo_response ( $self, $tx ) {
 	state $rc = require Blogolicious::Entry;
 	my $dom = $tx->res->dom;
 
-	my $generator = $self->_parse_generator( $dom );
-	my $server    = $self->_parse_server( $tx->res );
+	my $generator = $self->_parse_generator( $dom ) // '';
+	my $server    = $tx->res->headers->header( 'Server' ) // '';
 
 	my $entry = Blogolicious::Entry->new( {
 		original_url => $tx->req->url,
@@ -109,6 +135,57 @@ sub _process_response ( $self, $tx ) {
 #		headers => $tx->res->headers,
 		feed    => $self->_find_feed( $dom ),
 		tx      => $tx,
+		dom     => $tx->res->dom,
+		fetched_with => 'Mojo::UserAgent',
+		} );
+	}
+
+sub _fetch_with_curl ( $self, $url ) {
+	my $request = HTTP::Request->new( GET => $url->to_string );
+
+	my $error = 0;
+	my $entry;
+	$self->curl_ua->add_request(
+		request    => $request,
+		on_success => sub  { my ( $request, $response ) = @_;
+			if( $response->is_success ) {
+				$entry = $self->_process_curl_response( $request, $response );
+				}
+			else {
+				carp "Could not fetch $url with CURL";
+				$error = 1;
+				}
+			},
+		on_failure => sub {my ( $request, $error_msg, $error_desc )=@_;
+			say "on_failure: $request, $error_msg, $error_desc";
+			$error = 1;
+			},
+		);
+
+	$self->curl_ua->perform;
+
+	return if $error;
+	return $entry;
+	}
+
+sub _process_curl_response ( $self, $request, $response ) {
+	state $rc = require Blogolicious::Entry;
+	my $body = $response->decoded_content;
+	my $dom = Mojo::DOM->new( $body );
+
+	my $generator = $self->_parse_generator( $dom );
+	my $server    = $response->header( 'Server' );
+
+	my $entry = Blogolicious::Entry->new( {
+		original_url => $request->uri,
+		type    => $generator,
+		server  => $server,
+#		headers => $tx->res->headers,
+		feed    => $self->_find_feed( $dom ),
+		response=> $response,
+		request => $request,
+		dom     => $dom,
+		fetched_with => 'WWW::Curl::UserAgent',
 		} );
 	}
 
@@ -127,8 +204,18 @@ sub _parse_generator ( $self, $dom ) {
 		} // '';
 	}
 
-sub _parse_server ( $self, $res ) {
-	my $server = $res->headers->header( 'Server' );
+# <link rel="pingback" href="//www.learning-perl.com/xmlrpc.php" />
+# <link rel="alternate" type="application/rss+xml" title="Learning Perl &raquo; Comments Feed" href="//www.learning-perl.com/comments/feed/" />
+
+
+sub _find_feed ( $self, $dom ) {
+	my $link = eval {
+		$dom
+		->find( 'link[type="application/rss+xml"]' )
+		->map( 'attr' )
+		->first
+		->{href}
+		} // '';
 	}
 
 =back

@@ -134,13 +134,14 @@ Return the host of URL
 
 sub host ( $self ) { lc $self->original_url->host }
 
-=item tx
+=item dom
 
-Return the transaction
+Return the DOM
 
 =cut
 
-sub tx ( $self ) { $self->{tx} }
+sub dom ( $self ) { $self->{dom} }
+
 
 =item host
 
@@ -174,8 +175,6 @@ sub interesting_content ( $self ) {
 	my $selector = $self->interesting_content_selector;
 # <div class="entry">
 	my $body = eval { $self
-		->tx
-		->res
 		->dom
 		->at( $selector )
 		->content
