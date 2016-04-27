@@ -1,4 +1,4 @@
-package Blogolicious::Entry::BlogPloverCom;
+package Blogolicious::Entry::JjnapiorkowskiTypepadCom;
 use Mojo::Base qw(Blogolicious::Entry);
 
 use v5.20;
@@ -15,7 +15,7 @@ our $VERSION = '0.001_01';
 
 =head1 NAME
 
-Blogolicious::Entry::BlogPloverCom - Handle mjd blog entries
+Blogolicious::Entry::JjnapiorkowskiTypepadCom - Handle some blog entries
 
 =head1 SYNOPSIS
 
@@ -29,7 +29,8 @@ Blogolicious::Entry::BlogPloverCom - Handle mjd blog entries
 =cut
 
 sub interesting_content_selector ( $self ) {
-	'td.mainsection'
+	carp "interesting_content not implemented in " . __PACKAGE__ . "\n";
+	return;
 	}
 
 =back

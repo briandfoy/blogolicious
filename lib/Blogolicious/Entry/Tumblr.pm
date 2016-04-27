@@ -7,6 +7,8 @@ no warnings qw( experimental::signatures );
 
 use subs qw();
 
+use Carp qw(carp);
+
 our $VERSION = '0.001_01';
 
 =encoding utf8
@@ -21,6 +23,14 @@ Blogolicious::Entry::Tumblr - Handle Tumblr blog entries
 =head1 DESCRIPTION
 
 =over 4
+
+=item interesting_content_selector
+
+=cut
+
+sub interesting_content_selector ( $self ) {
+	'div.content'
+	}
 
 =back
 

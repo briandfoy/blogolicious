@@ -1,4 +1,4 @@
-package Blogolicious::Entry::BlogPloverCom;
+package Blogolicious::Entry::WwwNu42Com;
 use Mojo::Base qw(Blogolicious::Entry);
 
 use v5.20;
@@ -15,7 +15,7 @@ our $VERSION = '0.001_01';
 
 =head1 NAME
 
-Blogolicious::Entry::BlogPloverCom - Handle mjd blog entries
+Blogolicious::Entry::WwwNu42Com - Handle Sinan's blog entries
 
 =head1 SYNOPSIS
 
@@ -29,9 +29,29 @@ Blogolicious::Entry::BlogPloverCom - Handle mjd blog entries
 =cut
 
 sub interesting_content_selector ( $self ) {
-	'td.mainsection'
+	'article'
 	}
 
+=item sha1_fingerprint
+
+=item md5_fingerprint
+
+SSL certificate fingerprints
+
+=cut
+
+sub sha1_fingerprint ( $self ) {
+	state $key = "0AD38A30ABC0F0B605B45C727A90819E7FF9DAF4"
+	};
+
+sub md5_fingerprint ( $self ) {
+	state $key = "D15A7B9730E2694DBE791936A12835C2"
+	};
+
+sub ssl_defaults ( $self ) {
+	()
+
+	}
 =back
 
 =head1 TO DO

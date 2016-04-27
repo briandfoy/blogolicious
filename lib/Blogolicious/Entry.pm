@@ -6,6 +6,8 @@ no warnings qw( experimental::signatures );
 
 use subs qw();
 
+use Carp qw(croak carp);
+
 our $VERSION = '0.001_01';
 
 =encoding utf8
@@ -70,6 +72,9 @@ sub _choose_subclass ( $self ) {
 		   if( $type =~ m/WordPress/i   ) { __PACKAGE__ . '::WordPress'    }
 		elsif( $type =~ m/blogger/i     ) { __PACKAGE__ . '::Blogger'      }
 		elsif( $type =~ m/bpo-sidecar/i ) { __PACKAGE__ . '::BlogsPerlOrg' }
+		elsif( $type =~ m/\btypepad\b/i ) { __PACKAGE__ . '::Typepad' }
+		else {
+			carp "Found generator type [$type] but I don't know how to dispatch it\n" }
 		}
 	elsif( my $subclass = $self->host_to_subclass ) {
 		return $subclass
@@ -129,6 +134,14 @@ Return the host of URL
 
 sub host ( $self ) { lc $self->original_url->host }
 
+=item tx
+
+Return the transaction
+
+=cut
+
+sub tx ( $self ) { $self->{tx} }
+
 =item host
 
 Return the subclass version of the host
@@ -136,11 +149,44 @@ Return the subclass version of the host
 =cut
 
 sub host_to_subclass ( $self ) {
-	my $host = $self->host; say "===Host is $host";
+	my $host = $self->host;
 	return __PACKAGE__ . '::Tumblr' if $host =~ m/\.tumblr\.com\z/i;
 	$host =~ s/\b(\w)/\U$1/g;
 	$host =~ s/\.//g;
 	join '::', __PACKAGE__, $host;
+	}
+
+=item interesting_content_selector
+
+=cut
+
+sub interesting_content_selector ( $self ) {
+	croak "Implement interesting_content_selector in a subclass\n";
+	}
+
+=item interesting_content
+
+Return the blog entry part of the page.
+
+=cut
+
+sub interesting_content ( $self ) {
+	my $selector = $self->interesting_content_selector;
+# <div class="entry">
+	my $body = eval { $self
+		->tx
+		->res
+		->dom
+		->at( $selector )
+		->content
+		};
+
+	unless( defined $body ) {
+		carp "Did not extract content with selector [$selector]: $@\n";
+		return;
+		}
+
+	return $body;
 	}
 
 =back
