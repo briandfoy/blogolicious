@@ -40,7 +40,13 @@ entry.
 
 =item new
 
-Returns a Blogolicious::Entry object.
+Create a Blogolicious::Entry object.
+
+	dom           - a Mojo::DOM object representing the response content
+	original_url  - the original URL we fetched
+	type          - the content generator, if one was found
+	server        - the web server string declared by the response
+	fetched_with  - the web user agent that fetched the URL
 
 =cut
 
@@ -51,6 +57,10 @@ sub new ( $class, $hash = {} ) {
 	}
 
 =item init
+
+Called from C<init>. It determines a possible subclass based on
+either the content generator or the hostname. This re-blesses the
+object if there's a better subclass.
 
 =cut
 
@@ -73,8 +83,7 @@ sub _choose_subclass ( $self ) {
 		elsif( $type =~ m/blogger/i     ) { __PACKAGE__ . '::Blogger'      }
 		elsif( $type =~ m/bpo-sidecar/i ) { __PACKAGE__ . '::BlogsPerlOrg' }
 		elsif( $type =~ m/\btypepad\b/i ) { __PACKAGE__ . '::Typepad' }
-		else {
-			carp "Found generator type [$type] but I don't know how to dispatch it\n" }
+		else { carp "Found generator type [$type] but I don't know how to dispatch it\n" }
 		}
 	elsif( my $subclass = $self->host_to_subclass ) {
 		return $subclass
@@ -82,12 +91,11 @@ sub _choose_subclass ( $self ) {
 	else {
 		return;
 		}
-
 	}
 
 =item type
 
-Return the type of blogging engine.
+Return the type of blogging engine, such as WordPress or Typepad.
 
 =cut
 
@@ -95,7 +103,7 @@ sub type ( $self ) { $self->{type} }
 
 =item server
 
-Return the server name. Note that many servers fake or don't
+Return the web server name. Note that many servers fake or don't
 return a server string.
 
 =cut
@@ -104,7 +112,7 @@ sub server ( $self ) { $self->{server} }
 
 =item headers
 
-Return the response headers object
+Return the response headers object.
 
 =cut
 
@@ -128,7 +136,7 @@ sub set_original_url ( $self, $url ) { $self->{original_url} = $url }
 
 =item host
 
-Return the host of URL
+Return the host of URL. It's lowercased.
 
 =cut
 
@@ -136,7 +144,7 @@ sub host ( $self ) { lc $self->original_url->host }
 
 =item dom
 
-Return the DOM
+Return the DOM of the found content.
 
 =cut
 
@@ -167,25 +175,66 @@ sub interesting_content_selector ( $self ) {
 
 =item interesting_content
 
-Return the blog entry part of the page.
+Return the blog entry part of the page, including all of the HTML.
 
 =cut
 
 sub interesting_content ( $self ) {
+	return $self->{interesting_content} if $self->{interesting_content};
 	my $selector = $self->interesting_content_selector;
 # <div class="entry">
-	my $body = eval { $self
+	$self->{interesting_content} = eval { $self
 		->dom
 		->at( $selector )
 		->content
 		};
 
-	unless( defined $body ) {
+	unless( defined $self->{interesting_content} ) {
 		carp "Did not extract content with selector [$selector]: $@\n";
 		return;
 		}
 
-	return $body;
+	return $self->{interesting_content};
+	}
+
+=item interesting_content_text
+
+Return the blog entry part of the page, without the HTML.
+
+=cut
+
+sub interesting_content_text ( $self ) {
+	return $self->{interesting_content_text} if $self->{interesting_content_text};
+	state $hr = do {
+		require HTML::Restrict;
+		HTML::Restrict->new;
+		};
+	state $rc = require HTML::Entities;
+
+	$self->{interesting_content_text} = $hr->process( $self->interesting_content );
+	HTML::Entities::decode_entities( $self->{interesting_content_text} );
+	return $self->{interesting_content_text};
+	}
+
+=item code_blocks
+
+Return the text in the code blocks as an anonymous array.
+
+=cut
+
+sub code_block_selector { 'pre > code' }
+
+sub code_blocks ( $self ) {
+	return $self->{code_blocks} if $self->{code_blocks};
+
+	my $selector = $self->code_block_selector;
+# <div class="entry">
+	$self->{code_blocks} = [ eval { $self
+		->dom
+		->find( $selector )
+		->map( 'text' )
+		->each;
+		} ];
 	}
 
 =back

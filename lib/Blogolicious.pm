@@ -27,22 +27,31 @@ Blogolicious - Figure out stuff about a blog
 	# Wordpress, Blogger, whatever
 	my $type  = $entry->type;
 
-	# main_content - the interesting part of the blog
+	# the interesting part of the blog
 	# minus all the wrapper stuff
-	my $type  = $entry->main_content;
+	my $html  = $entry->interesting_content;
+
+	# the interesting part of the blog
+	# minus all the wrapper stuff or HTML
+	my $text  = $entry->interesting_content_text;
+
+	# the code parts of the blog
+	# minus all the wrapper stuff or HTML
+	my $array_ref = $entry->code_blocks;
+
 
 =head1 DESCRIPTION
 
-Blogolicious aims to reverse engineer a web page representing a
-blog entry so you have easy access to its interesting content and
-metadata. I want to do this without bothering you with the details
-about the blog type and so on.
+Blogolicious aims to reverse engineer a web page representing a blog
+entry so you have easy access to its interesting content and metadata
+no matter the generator. I want to do this without bothering you with
+the details about the blog type and so on.
 
 =over 4
 
 =item new
 
-Returns a Blogolicious object. Use this to control how it works
+Returns a Blogolicious object. There's no configuration for this yet.
 
 =cut
 
@@ -54,7 +63,7 @@ sub new ( $class ) {
 
 =item init
 
-Setup everything
+Setup everything, including the web user agents.
 
 =cut
 
@@ -65,7 +74,7 @@ sub init ( $self ) {
 
 =item mojo_ua
 
-Returns the user agent for Mojo::UserAgent
+Returns the user agent for L<Mojo::UserAgent>.
 
 =cut
 
@@ -77,7 +86,7 @@ sub mojo_ua ( $self ) { $self->{mojo_ua} }
 
 =item curl_ua
 
-Returns the user agent for WWW::Curl::UserAgent
+Returns the user agent for L<WWW::Curl::UserAgent>.
 
 =cut
 
