@@ -48,10 +48,6 @@ sub md5_fingerprint ( $self ) {
 	state $key = "D15A7B9730E2694DBE791936A12835C2"
 	};
 
-sub ssl_defaults ( $self ) {
-	()
-
-	}
 =back
 
 =head1 TO DO
