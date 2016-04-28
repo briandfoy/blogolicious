@@ -1,0 +1,77 @@
+#!perl
+use v5.20;
+
+use Mojolicious::Lite;
+
+get '/' => sub {
+	my $c = shift;
+	$c->render(template => 'index');
+	};
+
+get '/nu42' => sub {
+	my $c = shift;
+	$c->render(template => 'nu42');
+	};
+
+get '/wordpress' => sub {
+	my $c = shift;
+	$c->render(template => 'wordpress');
+	};
+
+get '/typepad' => sub {
+	my $c = shift;
+	$c->render(template => 'typepad');
+	};
+
+get '/blogger' => sub {
+	my $c = shift;
+	$c->render(template => 'blogger');
+	};
+
+app->start;
+__DATA__
+
+@@ index.html.ep
+% layout 'default';
+% title 'Welcome';
+<h1>Welcome to the Mojolicious real-time web framework!</h1>
+To learn more, you can browse through the documentation
+
+@@ layouts/default.html.ep
+<!DOCTYPE html>
+<html>
+  <head><title><%= title %></title></head>
+  <body><%= content %></body>
+</html>
+
+@@ nu42.html.ep
+% layout 'default';
+% title 'Welcome';
+<h1>This is Sinan's site</h1>
+<article>
+This is some article text
+</article>
+
+@@ wordpress.html.ep
+% layout 'default';
+% title 'Welcome';
+<h1>This is a Wordpress site</h1>
+<div class="entry">
+This is some article text
+</div>
+
+@@ blogger.html.ep
+% layout 'default';
+% title 'Welcome';
+<h1>This is a blogger site</h1>
+<div class="entry-content">
+This is some article text
+</div>
+
+@@ typepad.html.ep
+% layout 'default';
+% title 'Welcome';
+<h1>This is a typepad site</h1>
+<div class="entry">
+This is some article text
+</div>
