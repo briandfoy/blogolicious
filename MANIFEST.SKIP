@@ -1,4 +1,6 @@
 #!include_default
 
+\.travis\.yml
+\.?appveyor.yml
 \.releaserc
 \.lwpcookies
