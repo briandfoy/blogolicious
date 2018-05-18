@@ -28,13 +28,6 @@ CPAN web interfaces, such as L<CPAN
 Search|http://search.cpan.org/dist/Blogolicious> or
 L<MetaCPAN|http://www.metacpan.org/module/Blogolicious>:
 
-=over 4
-
-=item *	L<http://search.cpan.org/dist/Blogolicious>
-
-=item *	L<http://www.metacpan.org/module/Blogolicious>
-
-=back
 
 The standard module documentation has example uses in the SYNOPSIS
 section, but you can also look in the I<examples/> directory (if it's
