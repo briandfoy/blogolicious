@@ -23,11 +23,8 @@ name instead of the file location:
 
 	% perldoc Blogolicious
 
-You can read the documentation and inspect the meta data on one of the
-CPAN web interfaces, such as L<CPAN
-Search|http://search.cpan.org/dist/Blogolicious> or
-L<MetaCPAN|http://www.metacpan.org/module/Blogolicious>:
-
+You can read the documentation and inspect the meta data at
+L<MetaCPAN|http://www.metacpan.org/module/Blogolicious>.
 
 The standard module documentation has example uses in the SYNOPSIS
 section, but you can also look in the I<examples/> directory (if it's
