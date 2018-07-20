@@ -91,14 +91,24 @@ Returns the user agent for L<WWW::Curl::UserAgent>.
 =cut
 
 sub _setup_curl_ua ( $self ) {
-	state $rc = require WWW::Curl::UserAgent;
-	require HTTP::Request;
+	state $rc_curl = eval "require WWW::Curl::UserAgent; 1";
+
+	unless( $rc_curl ) {
+		carp "Install  WWW::Curl::UserAgent for fallback Curl support";
+		return;
+		}
+
 	$self->{curl_ua} = WWW::Curl::UserAgent->new(
 		timeout         => 10000,
 		connect_timeout =>  1000,
 		);
 	}
-sub curl_ua ( $self ) { $self->{curl_ua} }
+sub curl_ua ( $self ) {
+	unless( defined $self->{curl_ua} ) {
+		$self->_setup_curl_ua or return;
+		}
+	$self->{curl_ua};
+	}
 
 =item fetch( URL )
 
@@ -120,8 +130,8 @@ sub _fetch_with_mojo ( $self, $url ) {
 	my $tx =  $self->mojo_ua->get( $url );
 	unless( $tx->success ) {
 		my $err = $tx->error;
-#		carp "$err->{code} response: $err->{message}" if $err->{code};
-#		carp "Connection error: $err->{message}";
+		carp "$err->{code} response: $err->{message}" if $err->{code};
+		carp "Connection error: $err->{message}";
 		return;
 		}
 
