@@ -2,6 +2,16 @@
 
 =encoding utf8
 
+=for HTML <a href="https://travis-ci.org/briandfoy/blogolicious"><img src="https://travis-ci.org/briandfoy/blogolicious.svg?branch=master" /></a>
+
+=for HTML <a href='https://ci.appveyor.com/project/briandfoy/blogolicious'><img src='https://ci.appveyor.com/api/projects/status/jlvqi670jr89ra4w?svg=true' /></a>
+
+=for HTML <a href='https://coveralls.io/github/briandfoy/blogolicious?branch=master'><img src='https://coveralls.io/repos/github/briandfoy/blogolicious/badge.svg?branch=master' alt='Coverage Status' /></a>
+
+=for HTML <a href="https://github.com/briandfoy/blogolicious/blob/master/LICENSE"><img src="https://img.shields.io/cpan/l/Blogolicious.svg" /></a>
+
+=for HTML <a href="http://www.metacpan.org/module/Blogolicious"><img src="https://img.shields.io/cpan/v/Blogolicious.svg" /></A>
+
 =head1 The Blogolicious module
 
 This is the I<README> for the L<Blogolicious> Perl module.
