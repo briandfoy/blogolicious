@@ -151,7 +151,7 @@ Return the DOM of the found content.
 sub dom ( $self ) { $self->{dom} }
 
 
-=item host
+=item host_to_subclass
 
 Return the subclass version of the host
 
@@ -216,13 +216,19 @@ sub interesting_content_text ( $self ) {
 	return $self->{interesting_content_text};
 	}
 
+=item code_block_selector
+
+Return the CSS Selector to use to extract code blocks.
+
+=cut
+
+sub code_block_selector { 'pre > code' }
+
 =item code_blocks
 
 Return the text in the code blocks as an anonymous array.
 
 =cut
-
-sub code_block_selector { 'pre > code' }
 
 sub code_blocks ( $self ) {
 	return $self->{code_blocks} if $self->{code_blocks};
