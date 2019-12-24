@@ -67,7 +67,7 @@ my %WriteMakefile = (
 	'PREREQ_PM' => {
 		'Carp'        => '0',
 		'Mojolicious' => '0',
-		'IO::Socket'  => '1.94',
+		'IO::Socket'  => '1.40',
 		},
 
 	'META_MERGE' => {
