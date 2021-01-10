@@ -53,7 +53,7 @@ brian d foy, C<< <brian.d.foy@gmail.com> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2016-2018, brian d foy, All Rights Reserved.
+Copyright © 2016-2021, brian d foy, All Rights Reserved.
 
 You may redistribute this under the terms of the Artistic License 2.0.
 
