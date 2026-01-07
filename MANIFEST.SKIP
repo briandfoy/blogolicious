@@ -86,3 +86,5 @@
 \.icloud$
 \A\.github\b
 .gitattributes
+
+.downstream.json
